@@ -18,7 +18,7 @@ The Core Backend powers all core scheduling intelligence:
   - KPIs
   - Internal admin/ops actions
 
-### Chatbot NLU (Rasa)
+### Chatbot NLU (Dialogflow)
 - Receives webhook messages from the LINE OA chatbot (via reverse proxy).
 - Classifies user intents and entities.
 - Delegates actions to:
