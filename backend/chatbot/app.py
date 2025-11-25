@@ -6,6 +6,7 @@ import sqlite3
 import logging
 from datetime import datetime, timezone
 from contextlib import contextmanager
+from collections import OrderedDict
 
 import requests
 from flask import Flask, request, jsonify
@@ -13,7 +14,8 @@ from flask_cors import CORS
 from dotenv import load_dotenv, find_dotenv
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
-from collections import OrderedDict
+
+from normalizer import build_solver_payload_from_db_rows
 
 # ------------------------------------
 # Setup & Config
@@ -26,6 +28,9 @@ LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET", "")
 RASA_URL = os.getenv("RASA_URL", "http://localhost:5005/model/parse")
 DB_PATH = os.getenv("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "nurse_prefs.db"))
 PLACEHOLDER_NURSES = int(os.getenv("PLACEHOLDER_NURSES", "12"))
+
+# FastAPI solver endpoint
+SOLVER_URL = os.getenv("SOLVER_URL", "http://127.0.0.1:8000/solve")
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("NurseBot")
@@ -52,10 +57,12 @@ def db_connection():
     finally:
         conn.close()
 
+
 def init_db():
     with db_connection() as conn:
         c = conn.cursor()
-        c.execute("""
+        c.execute(
+            """
         CREATE TABLE IF NOT EXISTS nurses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             line_user_id TEXT UNIQUE,
@@ -64,8 +71,10 @@ def init_db():
             employment_type TEXT,
             unit TEXT
         )
-        """)
-        c.execute("""
+        """
+        )
+        c.execute(
+            """
         CREATE TABLE IF NOT EXISTS preferences (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nurse_id INTEGER,
@@ -73,14 +82,17 @@ def init_db():
             data TEXT,
             created_at TEXT
         )
-        """)
+        """
+        )
     logger.info(f"Database initialized at: {DB_PATH}")
+
 
 def drop_db():
     with db_connection() as conn:
         c = conn.cursor()
         c.execute("DROP TABLE IF EXISTS preferences")
         c.execute("DROP TABLE IF EXISTS nurses")
+
 
 def seed_placeholders(count: int = PLACEHOLDER_NURSES):
     if count <= 0:
@@ -92,34 +104,56 @@ def seed_placeholders(count: int = PLACEHOLDER_NURSES):
         if row and row[0] > 0:
             return 0
         import random, calendar
+
         today = datetime.now()
         year, month = today.year, today.month
         for i in range(1, count + 1):
             # diversify levels (about 40% level 2)
-            level = 2 if (i % 5 in (0,1)) else 1
+            level = 2 if (i % 5 in (0, 1)) else 1
             c.execute(
                 "INSERT INTO nurses (line_user_id, name, level, employment_type, unit) VALUES (?, ?, ?, ?, ?)",
-                (f"PLACEHOLDER_{i}", f"Nurse {i}", level, "full_time", "ER")
+                (f"PLACEHOLDER_{i}", f"Nurse {i}", level, "full_time", "ER"),
             )
             nid = c.lastrowid
             # seed a shift preference and 1-2 day-offs
             shift = random.choice(["M", "A", "N"])
             # choose 3 days of week
-            day_options = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+            day_options = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
             days = random.sample(day_options, k=3)
-            priority = random.choice(["low","medium","high"])
-            pref_shifts = json.dumps({"shift": shift, "days": days, "priority": priority}, ensure_ascii=False)
-            c.execute("INSERT INTO preferences (nurse_id, preference_type, data, created_at) VALUES (?,?,?,?)",
-                      (nid, "preferred_shifts", pref_shifts, datetime.now(timezone.utc).isoformat()))
+            priority = random.choice(["low", "medium", "high"])
+            pref_shifts = json.dumps(
+                {"shift": shift, "days": days, "priority": priority},
+                ensure_ascii=False,
+            )
+            c.execute(
+                "INSERT INTO preferences (nurse_id, preference_type, data, created_at) VALUES (?,?,?,?)",
+                (
+                    nid,
+                    "preferred_shifts",
+                    pref_shifts,
+                    datetime.now(timezone.utc).isoformat(),
+                ),
+            )
             # day offs
-            for _ in range(random.randint(1,2)):
+            for _ in range(random.randint(1, 2)):
                 day = random.randint(1, max(28, calendar.monthrange(year, month)[1]))
-                rank = random.choice([1,2,3])
-                pref_dayoff = json.dumps({"date": f"{year:04}-{month:02}-{day:02}", "rank": rank}, ensure_ascii=False)
-                c.execute("INSERT INTO preferences (nurse_id, preference_type, data, created_at) VALUES (?,?,?,?)",
-                          (nid, "preferred_days_off", pref_dayoff, datetime.now(timezone.utc).isoformat()))
+                rank = random.choice([1, 2, 3])
+                pref_dayoff = json.dumps(
+                    {"date": f"{year:04}-{month:02}-{day:02}", "rank": rank},
+                    ensure_ascii=False,
+                )
+                c.execute(
+                    "INSERT INTO preferences (nurse_id, preference_type, data, created_at) VALUES (?,?,?,?)",
+                    (
+                        nid,
+                        "preferred_days_off",
+                        pref_dayoff,
+                        datetime.now(timezone.utc).isoformat(),
+                    ),
+                )
     logger.info(f"Seeded {count} placeholder nurses with preferences")
     return count
+
 
 # Boot: init and seed if empty
 init_db()
@@ -148,15 +182,20 @@ def normalize_employment_type(value):
         return "contract"
     return v
 
+
 def get_or_create_nurse(line_user_id, name=None):
     try:
         with db_connection() as conn:
             c = conn.cursor()
-            nurse = c.execute("SELECT id FROM nurses WHERE line_user_id = ?", (line_user_id,)).fetchone()
+            nurse = c.execute(
+                "SELECT id FROM nurses WHERE line_user_id = ?", (line_user_id,)
+            ).fetchone()
             if nurse:
                 return nurse[0]
-            c.execute("INSERT INTO nurses (line_user_id, name, level, employment_type, unit) VALUES (?, ?, ?, ?, ?)",
-                      (line_user_id, name or "Unknown", 1, "full_time", "ER"))
+            c.execute(
+                "INSERT INTO nurses (line_user_id, name, level, employment_type, unit) VALUES (?, ?, ?, ?, ?)",
+                (line_user_id, name or "Unknown", 1, "full_time", "ER"),
+            )
             new_id = c.lastrowid
             logger.info(f"New nurse created: ID={new_id}, LINE_ID={line_user_id}")
             return new_id
@@ -167,49 +206,92 @@ def get_or_create_nurse(line_user_id, name=None):
         raise
     except sqlite3.IntegrityError:
         with db_connection() as conn:
-            row = conn.execute("SELECT id FROM nurses WHERE line_user_id = ?", (line_user_id,)).fetchone()
+            row = conn.execute(
+                "SELECT id FROM nurses WHERE line_user_id = ?", (line_user_id,)
+            ).fetchone()
             if row:
                 return row[0]
         raise
+
 
 def update_nurse_details(nurse_id, level=None, unit=None, employment_type=None):
     emp_type = normalize_employment_type(employment_type) if employment_type else None
     with db_connection() as conn:
         c = conn.cursor()
         updates, params = [], []
-        if level is not None: updates.append("level = ?"); params.append(level)
-        if emp_type: updates.append("employment_type = ?"); params.append(emp_type)
-        if unit: updates.append("unit = ?"); params.append(unit)
+        if level is not None:
+            updates.append("level = ?")
+            params.append(level)
+        if emp_type:
+            updates.append("employment_type = ?")
+            params.append(emp_type)
+        if unit:
+            updates.append("unit = ?")
+            params.append(unit)
         if updates:
             params.append(nurse_id)
-            c.execute(f"UPDATE nurses SET {', '.join(updates)} WHERE id = ?", params)
+            c.execute(
+                f"UPDATE nurses SET {', '.join(updates)} WHERE id = ?", params
+            )
+
 
 def insert_preference(nurse_id, pref_type, data_dict):
     with db_connection() as conn:
-        conn.execute("""
+        conn.execute(
+            """
             INSERT INTO preferences (nurse_id, preference_type, data, created_at)
             VALUES (?, ?, ?, ?)
-        """, (nurse_id, pref_type, json.dumps(data_dict, ensure_ascii=False),
-              datetime.now(timezone.utc).isoformat()))
-    logger.info(f"Preference saved for nurse_id={nurse_id}: {pref_type} -> {data_dict}")
+        """,
+            (
+                nurse_id,
+                pref_type,
+                json.dumps(data_dict, ensure_ascii=False),
+                datetime.now(timezone.utc).isoformat(),
+            ),
+        )
+    logger.info(
+        f"Preference saved for nurse_id={nurse_id}: {pref_type} -> {data_dict}"
+    )
 
 # ------------------------------------
 # Helpers for text normalization
 # ------------------------------------
 DAY_MAP = {
-    "mon": "Mon", "monday": "Mon", "จันทร์": "Mon",
-    "tue": "Tue", "tuesday": "Tue", "อังคาร": "Tue",
-    "wed": "Wed", "wednesday": "Wed", "พุธ": "Wed",
-    "thu": "Thu", "thursday": "Thu", "พฤหัส": "Thu", "พฤหัสบดี": "Thu",
-    "fri": "Fri", "friday": "Fri", "ศุกร์": "Fri",
-    "sat": "Sat", "saturday": "Sat", "เสาร์": "Sat",
-    "sun": "Sun", "sunday": "Sun", "อาทิตย์": "Sun",
+    "mon": "Mon",
+    "monday": "Mon",
+    "จันทร์": "Mon",
+    "tue": "Tue",
+    "tuesday": "Tue",
+    "อังคาร": "Tue",
+    "wed": "Wed",
+    "wednesday": "Wed",
+    "พุธ": "Wed",
+    "thu": "Thu",
+    "thursday": "Thu",
+    "พฤหัส": "Thu",
+    "พฤหัสบดี": "Thu",
+    "fri": "Fri",
+    "friday": "Fri",
+    "ศุกร์": "Fri",
+    "sat": "Sat",
+    "saturday": "Sat",
+    "เสาร์": "Sat",
+    "sun": "Sun",
+    "sunday": "Sun",
+    "อาทิตย์": "Sun",
 }
 SHIFT_MAP = {
-    "morning": "M", "เช้า": "M", "m": "M",
-    "afternoon": "A", "บ่าย": "A", "a": "A",
-    "night": "N", "กลางคืน": "N", "n": "N"
+    "morning": "M",
+    "เช้า": "M",
+    "m": "M",
+    "afternoon": "A",
+    "บ่าย": "A",
+    "a": "A",
+    "night": "N",
+    "กลางคืน": "N",
+    "n": "N",
 }
+
 
 def normalize_day_list(raw_days):
     if not raw_days:
@@ -227,14 +309,19 @@ def normalize_day_list(raw_days):
             result.append(d)
     return result
 
+
 # ------------------------------------
 # LINE Webhook + Rasa Integration (dev-safe)
 # ------------------------------------
 @app.post("/callback_test")
 def callback_test():
     data = request.get_json(force=True) or {}
-    text = data.get("text") or (((data.get("events") or [{}])[0]).get("message") or {}).get("text", "")
-    user_id = data.get("user_id") or (((data.get("events") or [{}])[0]).get("source") or {}).get("userId", "DEV_USER")
+    text = data.get("text") or (((data.get("events") or [{}])[0]).get("message") or {}).get(
+        "text", ""
+    )
+    user_id = data.get("user_id") or (
+        ((data.get("events") or [{}])[0]).get("source") or {}
+    ).get("userId", "DEV_USER")
 
     try:
         nurse_id = get_or_create_nurse(user_id, "Dev User")
@@ -268,15 +355,37 @@ def callback_test():
             elif any(k in low for k in ["กลางคืน", "ดึก", "night"]):
                 entities["shift"] = "night"
             days = []
-            for k in ["จันทร์","อังคาร","พุธ","พฤหัส","ศุกร์","เสาร์","อาทิตย์",
-                      "monday","tuesday","wednesday","thursday","friday","saturday","sunday"]:
+            for k in [
+                "จันทร์",
+                "อังคาร",
+                "พุธ",
+                "พฤหัส",
+                "ศุกร์",
+                "เสาร์",
+                "อาทิตย์",
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+            ]:
                 if k in low:
                     days.append(k)
             if days:
                 entities["days"] = days
             intent = "add_shift_preference" if "shift" in entities else "update_profile"
         reply_text = process_intent(intent, nurse_id, entities, "Dev User")
-        return jsonify({"ok": True, "intent": intent, "entities": entities, "reply": reply_text, "fallback": True})
+        return jsonify(
+            {
+                "ok": True,
+                "intent": intent,
+                "entities": entities,
+                "reply": reply_text,
+                "fallback": True,
+            }
+        )
 
     # Parse Rasa entities structure
     raw_ents = rasa_data.get("entities", []) if rasa_data else []
@@ -297,15 +406,20 @@ def callback_test():
         return jsonify({"ok": True, "reply": "nlu_fallback", "saved": False})
 
     reply_text = process_intent(intent, nurse_id, entities, "Dev User")
-    return jsonify({"ok": True, "intent": intent, "entities": entities, "reply": reply_text})
+    return jsonify(
+        {"ok": True, "intent": intent, "entities": entities, "reply": reply_text}
+    )
+
 
 # Alias dev path for demo UI compatibility
 @app.post("/dev/callback_test")
 def dev_callback_test():
     return callback_test()
 
+
 # Real LINE webhook (guard for missing creds)
 if handler and line_bot_api:
+
     @app.post("/callback")
     def callback():
         signature = request.headers.get("X-Line-Signature", "")
@@ -329,7 +443,9 @@ if handler and line_bot_api:
         nurse_id = get_or_create_nurse(user_id, line_name)
 
         try:
-            rasa_resp = requests.post(RASA_URL, json={"text": user_message}, timeout=5)
+            rasa_resp = requests.post(
+                RASA_URL, json={"text": user_message}, timeout=5
+            )
             rasa_resp.raise_for_status()
             rasa_data = rasa_resp.json()
         except Exception as e:
@@ -339,24 +455,35 @@ if handler and line_bot_api:
 
         intent = rasa_data.get("intent", {}).get("name")
         confidence = rasa_data.get("intent", {}).get("confidence", 0)
-        entities = {e.get("entity"): e.get("value") for e in rasa_data.get("entities", []) if "entity" in e}
+        entities = {
+            e.get("entity"): e.get("value")
+            for e in rasa_data.get("entities", [])
+            if "entity" in e
+        }
 
         if not intent or confidence < 0.5 or intent == "nlu_fallback":
             insert_preference(nurse_id, "unrecognized", {"text": user_message})
-            safe_reply(event, f"ขอโทษค่ะ {line_name} ฉันไม่เข้าใจข้อความของคุณ กรุณาลองใหม่อีกครั้งนะคะ")
+            safe_reply(
+                event,
+                f"ขอโทษค่ะ {line_name} ฉันไม่เข้าใจข้อความของคุณ กรุณาลองใหม่อีกครั้งนะคะ",
+            )
             return
 
         reply = process_intent(intent, nurse_id, entities, line_name)
         safe_reply(event, reply)
+
 
 def safe_reply(event, text):
     if not (handler and line_bot_api):
         return
     try:
         text = text or "ขอโทษค่ะ ระบบไม่สามารถตอบกลับได้ในตอนนี้"
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=text))
+        line_bot_api.reply_message(
+            event.reply_token, TextSendMessage(text=text)
+        )
     except Exception as e:
         logger.error(f"LINE reply failed: {e}")
+
 
 # ------------------------------------
 # Intent Handling
@@ -373,15 +500,30 @@ def process_intent(intent, nurse_id, entities, line_name):
             if m:
                 level_value = int(m.group())
 
-        update_nurse_details(nurse_id, level=level_value, employment_type=employment_type, unit=unit)
-        return f"Got it, {line_name}! Profile updated (Level {level_value or 1}, {employment_type or 'full_time'}, Unit: {unit or 'ER'})."
+        update_nurse_details(
+            nurse_id,
+            level=level_value,
+            employment_type=employment_type,
+            unit=unit,
+        )
+        return (
+            f"Got it, {line_name}! Profile updated "
+            f"(Level {level_value or 1}, {employment_type or 'full_time'}, Unit: {unit or 'ER'})."
+        )
 
     elif intent == "add_shift_preference":
         shift = SHIFT_MAP.get(str(entities.get("shift", "")).lower(), "M")
         days = normalize_day_list(entities.get("days", []))
         priority = entities.get("priority", "medium")
-        insert_preference(nurse_id, "preferred_shifts", {"shift": shift, "days": days, "priority": priority})
-        return f"Preference saved, {line_name}: {priority} priority {shift} shift on {', '.join(days)}."
+        insert_preference(
+            nurse_id,
+            "preferred_shifts",
+            {"shift": shift, "days": days, "priority": priority},
+        )
+        return (
+            f"Preference saved, {line_name}: {priority} priority "
+            f"{shift} shift on {', '.join(days)}."
+        )
 
     elif intent == "add_day_off":
         raw_day = entities.get("date")
@@ -401,12 +543,18 @@ def process_intent(intent, nurse_id, entities, line_name):
             except ValueError:
                 date_iso = None
 
-        insert_preference(nurse_id, "preferred_days_off", {"date": date_iso, "rank": rank})
-        return f"Got it, {line_name}! Day off on {date_iso or 'unrecognized date'} saved (priority {rank})."
+        insert_preference(
+            nurse_id, "preferred_days_off", {"date": date_iso, "rank": rank}
+        )
+        return (
+            f"Got it, {line_name}! Day off on {date_iso or 'unrecognized date'} "
+            f"saved (priority {rank})."
+        )
 
     # default: record unrecognized
     insert_preference(nurse_id, "unrecognized", {"note": "intent not handled"})
     return "Saved."
+
 
 # ------------------------------------
 # Export All
@@ -417,28 +565,40 @@ def export_all():
     Export all nurses and preferences in optimizer-ready JSON format.
     """
     with db_connection() as conn:
-        nurses = conn.execute("SELECT id, name, level, employment_type, unit FROM nurses").fetchall()
-        prefs = conn.execute("SELECT nurse_id, preference_type, data FROM preferences").fetchall()
+        nurses = conn.execute(
+            "SELECT id, name, level, employment_type, unit FROM nurses"
+        ).fetchall()
+        prefs = conn.execute(
+            "SELECT nurse_id, preference_type, data FROM preferences"
+        ).fetchall()
 
     nurse_dict = {}
     for n in nurses:
         nurse_id = n[0]
-        nurse_dict[nurse_id] = OrderedDict([
-            ("id", f"N{nurse_id:03}"),
-            ("name", n[1] or f"Nurse {nurse_id}"),
-            ("level", n[2] or 1),
-            ("employment_type", n[3] or "full_time"),
-            ("unit", n[4] or "ER"),
-            ("preferences", {
-                "preferred_shifts": [],
-                "preferred_days_off": []
-            })
-        ])
+        nurse_dict[nurse_id] = OrderedDict(
+            [
+                ("id", f"N{nurse_id:03}"),
+                ("name", n[1] or f"Nurse {nurse_id}"),
+                ("level", n[2] or 1),
+                ("employment_type", n[3] or "full_time"),
+                ("unit", n[4] or "ER"),
+                (
+                    "preferences",
+                    {
+                        "preferred_shifts": [],
+                        "preferred_days_off": [],
+                    },
+                ),
+            ]
+        )
 
     for nurse_id, pref_type, data in prefs:
         try:
             parsed = json.loads(data)
-            if nurse_id in nurse_dict and pref_type in nurse_dict[nurse_id]["preferences"]:
+            if (
+                nurse_id in nurse_dict
+                and pref_type in nurse_dict[nurse_id]["preferences"]
+            ):
                 nurse_dict[nurse_id]["preferences"][pref_type].append(parsed)
         except Exception as e:
             logger.warning(f"Failed to parse preference for {nurse_id}: {e}")
@@ -446,8 +606,170 @@ def export_all():
     sorted_nurses = [nurse_dict[k] for k in sorted(nurse_dict.keys())]
     return app.response_class(
         response=json.dumps({"nurses": sorted_nurses}, ensure_ascii=False, indent=2),
-        mimetype="application/json"
+        mimetype="application/json",
     )
+
+
+# ------------------------------------
+# Normalized payload for solver
+# ------------------------------------
+@app.get("/normalize_for_solver")
+def normalize_for_solver():
+    """
+    Build a JSON payload that is ready to POST to the FastAPI /solve endpoint.
+
+    Optional query params:
+      - start_date=YYYY-MM-DD (default: today)
+      - horizon_days=int (default: 7)
+      - morning_demand=int (default: 4)
+      - evening_demand=int (default: 3)
+      - night_demand=int (default: 2)
+    """
+    try:
+        start_date = request.args.get("start_date") or None
+        horizon_days = int(request.args.get("horizon_days", 7))
+        morning_demand = int(request.args.get("morning_demand", 4))
+        evening_demand = int(request.args.get("evening_demand", 3))
+        night_demand = int(request.args.get("night_demand", 2))
+    except ValueError:
+        return jsonify({"ok": False, "error": "invalid query param"}), 400
+
+    with db_connection() as conn:
+        nurses_rows = conn.execute(
+            "SELECT id, name, level, employment_type, unit FROM nurses"
+        ).fetchall()
+        prefs_rows = conn.execute(
+            "SELECT nurse_id, preference_type, data FROM preferences"
+        ).fetchall()
+
+    payload = build_solver_payload_from_db_rows(
+        nurses_rows=nurses_rows,
+        prefs_rows=prefs_rows,
+        start_date=start_date,
+        horizon_days=horizon_days,
+        morning_demand=morning_demand,
+        evening_demand=evening_demand,
+        night_demand=night_demand,
+    )
+
+    return app.response_class(
+        response=json.dumps(payload, ensure_ascii=False, indent=2),
+        mimetype="application/json",
+    )
+
+
+# Simple alias to fix old /dev/solve_preview calls
+@app.get("/dev/solve_preview")
+def dev_solve_preview():
+    """
+    Preview the normalized payload (same as /normalize_for_solver).
+    """
+    return normalize_for_solver()
+
+
+# ------------------------------------
+# Call FastAPI /solve
+# ------------------------------------
+@app.post("/dev/solve")
+def dev_solve():
+    """
+    Build payload from SQLite, call the FastAPI /solve endpoint,
+    and return both the request body and solver response.
+
+    Optional query params (same as /normalize_for_solver):
+      - start_date=YYYY-MM-DD (default: today)
+      - horizon_days=int (default: 7)
+      - morning_demand=int (default: 4)
+      - evening_demand=int (default: 3)
+      - night_demand=int (default: 2)
+    """
+    try:
+        start_date = request.args.get("start_date") or None
+        horizon_days = int(request.args.get("horizon_days", 7))
+        morning_demand = int(request.args.get("morning_demand", 4))
+        evening_demand = int(request.args.get("evening_demand", 3))
+        night_demand = int(request.args.get("night_demand", 2))
+    except ValueError:
+        return jsonify({"ok": False, "error": "invalid query param"}), 400
+
+    with db_connection() as conn:
+        nurses_rows = conn.execute(
+            "SELECT id, name, level, employment_type, unit FROM nurses"
+        ).fetchall()
+        prefs_rows = conn.execute(
+            "SELECT nurse_id, preference_type, data FROM preferences"
+        ).fetchall()
+
+    # Normalizer might return:
+    #  A) a full solve payload (with nurses/days/shifts/demand), OR
+    #  B) a wrapped object { "meta": ..., "payload": {...} }
+    normalized = build_solver_payload_from_db_rows(
+        nurses_rows=nurses_rows,
+        prefs_rows=prefs_rows,
+        start_date=start_date,
+        horizon_days=horizon_days,
+        morning_demand=morning_demand,
+        evening_demand=evening_demand,
+        night_demand=night_demand,
+    )
+
+    # Case A: already a SolveRequest-like dict
+    if isinstance(normalized, dict) and {"nurses", "days", "shifts", "demand"}.issubset(
+        normalized.keys()
+    ):
+        meta = None
+        solve_body = normalized
+    else:
+        # Case B: wrapper dict
+        if not isinstance(normalized, dict):
+            return jsonify(
+                {"ok": False, "error": "normalizer_unexpected_type"}
+            ), 500
+
+        meta = normalized.get("meta")
+        solve_body = normalized.get("payload") or {}
+
+    # Final sanity check
+    if not isinstance(solve_body, dict) or not {
+        "nurses",
+        "days",
+        "shifts",
+        "demand",
+    }.issubset(solve_body.keys()):
+        return jsonify(
+            {"ok": False, "error": "normalizer_shape_invalid", "payload": normalized}
+        ), 500
+
+    # Call the FastAPI solver
+    try:
+        resp = requests.post(SOLVER_URL, json=solve_body, timeout=60)
+        resp.raise_for_status()
+        solver_json = resp.json()
+    except Exception as e:
+        logger.error(f"Error calling solver at {SOLVER_URL}: {e}")
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "error": "solver_call_failed",
+                    "detail": str(e),
+                    "solver_url": SOLVER_URL,
+                }
+            ),
+            502,
+        )
+
+    return jsonify(
+        {
+            "ok": True,
+            "solver_url": SOLVER_URL,
+            "meta": meta,
+            "solve_request": solve_body,
+            "solve_response": solver_json,
+        }
+    )
+
+
 
 # ------------------------------------
 # Dev/Health Endpoints
@@ -462,6 +784,7 @@ def health():
         ok, err = False, str(e)
     return jsonify({"ok": ok, "db_path": DB_PATH, "error": err})
 
+
 @app.post("/dev/initdb")
 def dev_initdb():
     try:
@@ -470,22 +793,31 @@ def dev_initdb():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+
 @app.get("/dev/dbinfo")
 def dev_dbinfo():
     try:
         with db_connection() as conn:
-            tables = [r[0] for r in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
-            ).fetchall()]
+            tables = [
+                r[0]
+                for r in conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+                ).fetchall()
+            ]
             counts = {}
             for t in tables:
                 try:
-                    counts[t] = conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+                    counts[t] = conn.execute(
+                        f"SELECT COUNT(*) FROM {t}"
+                    ).fetchone()[0]
                 except Exception:
                     counts[t] = "n/a"
-        return jsonify({"ok": True, "db_path": DB_PATH, "tables": tables, "counts": counts})
+        return jsonify(
+            {"ok": True, "db_path": DB_PATH, "tables": tables, "counts": counts}
+        )
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
 
 @app.post("/dev/resetdb")
 def dev_resetdb():
@@ -499,6 +831,7 @@ def dev_resetdb():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+
 @app.post("/dev/seed")
 def dev_seed():
     try:
@@ -509,13 +842,16 @@ def dev_seed():
         seeded = 0
         if total == 0:
             seeded = seed_placeholders(count)
-        return jsonify({"ok": True, "seeded": seeded, "existing_total": total})
+        return jsonify(
+            {"ok": True, "seeded": seeded, "existing_total": total}
+        )
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
 
 # ------------------------------------
 # Run App
 # ------------------------------------
 if __name__ == "__main__":
-    logger.info(f"Starting NurseBot Flask app on port 8080 | DB: {DB_PATH}")
-    app.run(port=8080, debug=True)
+    logger.info(f"Starting NurseBot Flask app on port 8070 | DB: {DB_PATH} | SOLVER_URL: {SOLVER_URL}")
+    app.run(host="0.0.0.0", port=8070, debug=True)

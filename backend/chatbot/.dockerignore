@@ -1,0 +1,26 @@
+# ignore python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ignore virtual environments
+venv/
+rasa310/
+
+# ignore rasa project (we do NOT build rasa inside chatbot)
+rasa/
+.rasa/
+models/
+*.tar.gz
+
+# ignore data
+nurse_prefs.db
+
+# ignore git and local stuff
+.git/
+.gitignore
+.env
+*.db
+*.sqlite
+*.log

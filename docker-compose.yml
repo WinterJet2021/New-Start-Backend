@@ -1,0 +1,45 @@
+services:
+  chatbot:
+    build:
+      context: ./backend/chatbot
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - DATABASE_PATH=${DATABASE_PATH}
+    ports:
+      - "8070:8070"
+    depends_on:
+      - solver
+      - rasa
+    volumes:
+      - ./backend/chatbot:/app
+    restart: unless-stopped
+
+  solver:
+    build:
+      context: ./backend/temp
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/temp:/app
+    restart: unless-stopped
+
+  rasa:
+    image: rasa/rasa:3.6.20-full
+    working_dir: /app
+    volumes:
+      # Mount your Rasa project here
+      - ./backend/chatbot/rasa:/app
+    command: >
+      run
+      --model models/20251031-170424-sluggish-module.tar.gz
+      --enable-api
+      --cors "*"
+      --debug
+      --port 5005
+    ports:
+      - "5005:5005"
+    restart: unless-stopped

@@ -1,2 +1,6 @@
 .env
 .venv/
+backend/chatbot/rasa/.cache/
+backend/chatbot/rasa/.keras/
+backend/chatbot/rasa/.config/
+backend/chatbot/rasa/__pycache__/

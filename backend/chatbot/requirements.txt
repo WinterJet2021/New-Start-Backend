@@ -11,3 +11,4 @@ transformers==4.44.0
 torch==2.3.0
 sentencepiece==0.2.0
 pythainlp>=4.0.0
+flask-cors

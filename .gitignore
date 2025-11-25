@@ -14,3 +14,10 @@ maywin.log
 .github/
 rasa310/
 venv/
+/node_modules
+# Rasa / HuggingFace caches (do not commit)
+backend/chatbot/rasa/.cache/
+backend/chatbot/rasa/.keras/
+backend/chatbot/rasa/.config/
+backend/chatbot/rasa/.rasa/
+backend/chatbot/rasa/__pycache__/
