@@ -21,3 +21,5 @@ backend/chatbot/rasa/.keras/
 backend/chatbot/rasa/.config/
 backend/chatbot/rasa/.rasa/
 backend/chatbot/rasa/__pycache__/
+.rasavenv/
+.venv/

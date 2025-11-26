@@ -1,0 +1,425 @@
+{
+  "status": "RELAXED_OPTIMAL",
+  "objective_value": 1330,
+  "assignments": [
+    {
+      "day": "2025-11-26",
+      "shift": "Morning",
+      "nurse": "N002"
+    },
+    {
+      "day": "2025-11-26",
+      "shift": "Morning",
+      "nurse": "N007"
+    },
+    {
+      "day": "2025-11-26",
+      "shift": "Morning",
+      "nurse": "N008"
+    },
+    {
+      "day": "2025-11-26",
+      "shift": "Morning",
+      "nurse": "N010"
+    },
+    {
+      "day": "2025-11-26",
+      "shift": "Evening",
+      "nurse": "N003"
+    },
+    {
+      "day": "2025-11-26",
+      "shift": "Evening",
+      "nurse": "N004"
+    },
+    {
+      "day": "2025-11-26",
+      "shift": "Night",
+      "nurse": "N005"
+    },
+    {
+      "day": "2025-11-26",
+      "shift": "Night",
+      "nurse": "N006"
+    },
+    {
+      "day": "2025-11-27",
+      "shift": "Morning",
+      "nurse": "N001"
+    },
+    {
+      "day": "2025-11-27",
+      "shift": "Morning",
+      "nurse": "N002"
+    },
+    {
+      "day": "2025-11-27",
+      "shift": "Morning",
+      "nurse": "N003"
+    },
+    {
+      "day": "2025-11-27",
+      "shift": "Morning",
+      "nurse": "N008"
+    },
+    {
+      "day": "2025-11-27",
+      "shift": "Evening",
+      "nurse": "N006"
+    },
+    {
+      "day": "2025-11-27",
+      "shift": "Evening",
+      "nurse": "N011"
+    },
+    {
+      "day": "2025-11-27",
+      "shift": "Night",
+      "nurse": "N007"
+    },
+    {
+      "day": "2025-11-27",
+      "shift": "Night",
+      "nurse": "N010"
+    },
+    {
+      "day": "2025-11-28",
+      "shift": "Morning",
+      "nurse": "N001"
+    },
+    {
+      "day": "2025-11-28",
+      "shift": "Morning",
+      "nurse": "N002"
+    },
+    {
+      "day": "2025-11-28",
+      "shift": "Morning",
+      "nurse": "N005"
+    },
+    {
+      "day": "2025-11-28",
+      "shift": "Morning",
+      "nurse": "N009"
+    },
+    {
+      "day": "2025-11-28",
+      "shift": "Evening",
+      "nurse": "N008"
+    },
+    {
+      "day": "2025-11-28",
+      "shift": "Evening",
+      "nurse": "N012"
+    },
+    {
+      "day": "2025-11-28",
+      "shift": "Evening",
+      "nurse": "N013"
+    },
+    {
+      "day": "2025-11-28",
+      "shift": "Night",
+      "nurse": "N004"
+    },
+    {
+      "day": "2025-11-28",
+      "shift": "Night",
+      "nurse": "N010"
+    },
+    {
+      "day": "2025-11-29",
+      "shift": "Morning",
+      "nurse": "N001"
+    },
+    {
+      "day": "2025-11-29",
+      "shift": "Morning",
+      "nurse": "N003"
+    },
+    {
+      "day": "2025-11-29",
+      "shift": "Morning",
+      "nurse": "N009"
+    },
+    {
+      "day": "2025-11-29",
+      "shift": "Morning",
+      "nurse": "N011"
+    },
+    {
+      "day": "2025-11-29",
+      "shift": "Evening",
+      "nurse": "N010"
+    },
+    {
+      "day": "2025-11-29",
+      "shift": "Evening",
+      "nurse": "N012"
+    },
+    {
+      "day": "2025-11-29",
+      "shift": "Evening",
+      "nurse": "N013"
+    },
+    {
+      "day": "2025-11-29",
+      "shift": "Night",
+      "nurse": "N004"
+    },
+    {
+      "day": "2025-11-29",
+      "shift": "Night",
+      "nurse": "N005"
+    },
+    {
+      "day": "2025-11-30",
+      "shift": "Morning",
+      "nurse": "N006"
+    },
+    {
+      "day": "2025-11-30",
+      "shift": "Morning",
+      "nurse": "N007"
+    },
+    {
+      "day": "2025-11-30",
+      "shift": "Morning",
+      "nurse": "N012"
+    },
+    {
+      "day": "2025-11-30",
+      "shift": "Morning",
+      "nurse": "N013"
+    },
+    {
+      "day": "2025-11-30",
+      "shift": "Evening",
+      "nurse": "N009"
+    },
+    {
+      "day": "2025-11-30",
+      "shift": "Night",
+      "nurse": "N001"
+    },
+    {
+      "day": "2025-11-30",
+      "shift": "Night",
+      "nurse": "N011"
+    },
+    {
+      "day": "2025-12-01",
+      "shift": "Morning",
+      "nurse": "N008"
+    },
+    {
+      "day": "2025-12-01",
+      "shift": "Evening",
+      "nurse": "N012"
+    },
+    {
+      "day": "2025-12-01",
+      "shift": "Night",
+      "nurse": "N003"
+    },
+    {
+      "day": "2025-12-01",
+      "shift": "Night",
+      "nurse": "N011"
+    },
+    {
+      "day": "2025-12-02",
+      "shift": "Morning",
+      "nurse": "N002"
+    },
+    {
+      "day": "2025-12-02",
+      "shift": "Morning",
+      "nurse": "N013"
+    },
+    {
+      "day": "2025-12-02",
+      "shift": "Evening",
+      "nurse": "N007"
+    },
+    {
+      "day": "2025-12-02",
+      "shift": "Night",
+      "nurse": "N005"
+    },
+    {
+      "day": "2025-12-02",
+      "shift": "Night",
+      "nurse": "N009"
+    },
+    {
+      "day": "2025-11-26",
+      "shift": "Evening",
+      "nurse": "N012"
+    },
+    {
+      "day": "2025-11-27",
+      "shift": "Evening",
+      "nurse": "N013"
+    },
+    {
+      "day": "2025-11-30",
+      "shift": "Evening",
+      "nurse": "N002"
+    },
+    {
+      "day": "2025-11-30",
+      "shift": "Evening",
+      "nurse": "N008"
+    },
+    {
+      "day": "2025-12-01",
+      "shift": "Morning",
+      "nurse": "N007"
+    },
+    {
+      "day": "2025-12-01",
+      "shift": "Morning",
+      "nurse": "N009"
+    },
+    {
+      "day": "2025-12-01",
+      "shift": "Morning",
+      "nurse": "N006"
+    },
+    {
+      "day": "2025-12-01",
+      "shift": "Evening",
+      "nurse": "N001"
+    },
+    {
+      "day": "2025-12-01",
+      "shift": "Evening",
+      "nurse": "N010"
+    },
+    {
+      "day": "2025-12-02",
+      "shift": "Morning",
+      "nurse": "N008"
+    },
+    {
+      "day": "2025-12-02",
+      "shift": "Morning",
+      "nurse": "N012"
+    },
+    {
+      "day": "2025-12-02",
+      "shift": "Evening",
+      "nurse": "N003"
+    },
+    {
+      "day": "2025-12-02",
+      "shift": "Evening",
+      "nurse": "N011"
+    }
+  ],
+  "understaffed": [],
+  "nurse_stats": [
+    {
+      "nurse": "N001",
+      "assigned_shifts": 5,
+      "overtime": 1,
+      "nights": 1,
+      "satisfaction": 86
+    },
+    {
+      "nurse": "N002",
+      "assigned_shifts": 5,
+      "overtime": 1,
+      "nights": 0,
+      "satisfaction": 90
+    },
+    {
+      "nurse": "N003",
+      "assigned_shifts": 5,
+      "overtime": 1,
+      "nights": 1,
+      "satisfaction": 86
+    },
+    {
+      "nurse": "N004",
+      "assigned_shifts": 3,
+      "overtime": 0,
+      "nights": 2,
+      "satisfaction": 87
+    },
+    {
+      "nurse": "N005",
+      "assigned_shifts": 4,
+      "overtime": 0,
+      "nights": 3,
+      "satisfaction": 85
+    },
+    {
+      "nurse": "N006",
+      "assigned_shifts": 4,
+      "overtime": 1,
+      "nights": 1,
+      "satisfaction": 85
+    },
+    {
+      "nurse": "N007",
+      "assigned_shifts": 5,
+      "overtime": 1,
+      "nights": 1,
+      "satisfaction": 86
+    },
+    {
+      "nurse": "N008",
+      "assigned_shifts": 6,
+      "overtime": 2,
+      "nights": 0,
+      "satisfaction": 80
+    },
+    {
+      "nurse": "N009",
+      "assigned_shifts": 5,
+      "overtime": 1,
+      "nights": 1,
+      "satisfaction": 86
+    },
+    {
+      "nurse": "N010",
+      "assigned_shifts": 5,
+      "overtime": 1,
+      "nights": 2,
+      "satisfaction": 82
+    },
+    {
+      "nurse": "N011",
+      "assigned_shifts": 5,
+      "overtime": 1,
+      "nights": 2,
+      "satisfaction": 82
+    },
+    {
+      "nurse": "N012",
+      "assigned_shifts": 6,
+      "overtime": 2,
+      "nights": 0,
+      "satisfaction": 80
+    },
+    {
+      "nurse": "N013",
+      "assigned_shifts": 5,
+      "overtime": 1,
+      "nights": 0,
+      "satisfaction": 90
+    }
+  ],
+  "details": {
+    "average_satisfaction": 85.0,
+    "post_fill": {
+      "note": "All gaps were filled with real-nurse overtime (never Night→Morning)."
+    },
+    "best_bound": 1330.0,
+    "wall_time_sec": 0.044591153,
+    "conflicts": 0,
+    "branches": 700
+  }
+}
