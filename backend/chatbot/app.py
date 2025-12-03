@@ -32,11 +32,6 @@ PLACEHOLDER_NURSES = int(os.getenv("PLACEHOLDER_NURSES", "12"))
 # FastAPI solver endpoint
 SOLVER_URL = os.getenv("SOLVER_URL", "http://127.0.0.1:8000/solve")
 
-# Paths for solver results
-SOLVER_RESULT_PATH = os.path.join(os.path.dirname(__file__), "latest_solver_result.json")
-SOLVER_RESULTS_DIR = os.path.join(os.path.dirname(__file__), "solver_results")
-os.makedirs(SOLVER_RESULTS_DIR, exist_ok=True)
-
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("NurseBot")
 
@@ -770,19 +765,31 @@ def normalize_for_solver():
 
     Optional query params:
       - start_date=YYYY-MM-DD (default: today)
-      - horizon_days=int (default: 7)
-      - morning_demand=int (default: 4)
-      - evening_demand=int (default: 3)
+      - horizon_days=int (default: 30)
+      - morning_demand=int (default: 6)
+      - evening_demand=int (default: 6)
       - night_demand=int (default: 2)
     """
+
+    def _safe_int(name: str, default: int) -> int:
+        """Convert query param to int, robust against None / '' / junk."""
+        raw = request.args.get(name, None)
+        if raw is None or str(raw).strip() == "":
+            return default
+        try:
+            return int(raw)
+        except ValueError:
+            # If it's invalid, treat as bad request
+            raise ValueError(f"Invalid value for {name}: {raw!r}")
+
     try:
         start_date = request.args.get("start_date") or None
-        horizon_days = int(request.args.get("horizon_days", 7))
-        morning_demand = int(request.args.get("morning_demand", 4))
-        evening_demand = int(request.args.get("evening_demand", 3))
-        night_demand = int(request.args.get("night_demand", 2))
-    except ValueError:
-        return jsonify({"ok": False, "error": "invalid query param"}), 400
+        horizon_days = _safe_int("horizon_days", 30)
+        morning_demand = _safe_int("morning_demand", 6)
+        evening_demand = _safe_int("evening_demand", 6)
+        night_demand = _safe_int("night_demand", 2)
+    except ValueError as e:
+        return jsonify({"ok": False, "error": "invalid query param", "detail": str(e)}), 400
 
     with db_connection() as conn:
         nurses_rows = conn.execute(
@@ -835,9 +842,9 @@ def dev_solve():
     """
     try:
         start_date = request.args.get("start_date") or None
-        horizon_days = int(request.args.get("horizon_days", 7))
-        morning_demand = int(request.args.get("morning_demand", 4))
-        evening_demand = int(request.args.get("evening_demand", 3))
+        horizon_days = int(request.args.get("horizon_days", 30))
+        morning_demand = int(request.args.get("morning_demand", 6))
+        evening_demand = int(request.args.get("evening_demand", 6))
         night_demand = int(request.args.get("night_demand", 2))
     except ValueError:
         return jsonify({"ok": False, "error": "invalid query param"}), 400
@@ -887,28 +894,7 @@ def dev_solve():
     try:
         resp = requests.post(SOLVER_URL, json=solve_body, timeout=60)
         resp.raise_for_status()
-        # RESPONSE HAS BEEN RECEIVED
         solver_json = resp.json()
-
-        # ---------------------------------------
-        # Save solver results
-        # ---------------------------------------
-        try:
-            # 1) Save latest result
-            with open(SOLVER_RESULT_PATH, "w", encoding="utf-8") as f:
-                json.dump(solver_json, f, indent=2, ensure_ascii=False)
-
-            # 2) Save historical result (timestamped)
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            history_path = os.path.join(SOLVER_RESULTS_DIR, f"solver_{timestamp}.json")
-            with open(history_path, "w", encoding="utf-8") as f:
-                json.dump(solver_json, f, indent=2, ensure_ascii=False)
-
-            logger.info(f"Solver result saved to: {SOLVER_RESULT_PATH}")
-            logger.info(f"Historical solver result saved to: {history_path}")
-        except Exception as e:
-            logger.error(f"Failed to save solver output: {e}")
-
     except Exception as e:
         logger.error(f"Error calling solver at {SOLVER_URL}: {e}")
         return (
@@ -933,49 +919,6 @@ def dev_solve():
         }
     )
 
-# -----
-# Provide a get request here
-# That will let the desktop fetch the solver results
-# by reading the data from the file 
-# -----
-
-
-@app.get("/dev/solver_result")
-def dev_solver_result():
-    """Return the most recent solver result saved from /dev/solve."""
-    if not os.path.exists(SOLVER_RESULT_PATH):
-        return jsonify({"ok": False, "error": "no_solver_result"}), 404
-
-    try:
-        with open(SOLVER_RESULT_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return jsonify({"ok": True, "result": data})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-
-@app.get("/dev/solver_history")
-def dev_solver_history():
-    """List all historical solver result files."""
-    try:
-        files = sorted(os.listdir(SOLVER_RESULTS_DIR))
-        return jsonify({"ok": True, "files": files})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-
-@app.get("/dev/solver_history/<filename>")
-def dev_solver_history_file(filename):
-    """Return a specific historical solver result file."""
-    path = os.path.join(SOLVER_RESULTS_DIR, filename)
-    if not os.path.exists(path):
-        return jsonify({"ok": False, "error": "file_not_found"}), 404
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return jsonify({"ok": True, "result": data})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
 
 # ------------------------------------
 # Dev/Health Endpoints

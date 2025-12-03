@@ -1,11 +1,11 @@
 {
   "status": "RELAXED_OPTIMAL",
-  "objective_value": 1630,
+  "objective_value": 1430,
   "assignments": [
     {
       "day": "2025-12-03",
       "shift": "Morning",
-      "nurse": "N004"
+      "nurse": "N003"
     },
     {
       "day": "2025-12-03",
@@ -15,22 +15,32 @@
     {
       "day": "2025-12-03",
       "shift": "Morning",
-      "nurse": "N007"
+      "nurse": "N006"
     },
     {
       "day": "2025-12-03",
       "shift": "Morning",
-      "nurse": "N011"
-    },
-    {
-      "day": "2025-12-03",
-      "shift": "Evening",
-      "nurse": "N003"
-    },
-    {
-      "day": "2025-12-03",
-      "shift": "Evening",
       "nurse": "N010"
+    },
+    {
+      "day": "2025-12-03",
+      "shift": "Evening",
+      "nurse": "N002"
+    },
+    {
+      "day": "2025-12-03",
+      "shift": "Evening",
+      "nurse": "N012"
+    },
+    {
+      "day": "2025-12-03",
+      "shift": "Night",
+      "nurse": "N009"
+    },
+    {
+      "day": "2025-12-03",
+      "shift": "Night",
+      "nurse": "N011"
     },
     {
       "day": "2025-12-04",
@@ -40,12 +50,12 @@
     {
       "day": "2025-12-04",
       "shift": "Morning",
-      "nurse": "N003"
+      "nurse": "N002"
     },
     {
       "day": "2025-12-04",
       "shift": "Morning",
-      "nurse": "N010"
+      "nurse": "N008"
     },
     {
       "day": "2025-12-04",
@@ -55,7 +65,12 @@
     {
       "day": "2025-12-04",
       "shift": "Evening",
-      "nurse": "N004"
+      "nurse": "N003"
+    },
+    {
+      "day": "2025-12-04",
+      "shift": "Evening",
+      "nurse": "N005"
     },
     {
       "day": "2025-12-04",
@@ -64,13 +79,18 @@
     },
     {
       "day": "2025-12-04",
-      "shift": "Evening",
+      "shift": "Night",
+      "nurse": "N004"
+    },
+    {
+      "day": "2025-12-04",
+      "shift": "Night",
       "nurse": "N011"
     },
     {
       "day": "2025-12-05",
       "shift": "Morning",
-      "nurse": "N002"
+      "nurse": "N005"
     },
     {
       "day": "2025-12-05",
@@ -84,13 +104,13 @@
     },
     {
       "day": "2025-12-05",
-      "shift": "Morning",
+      "shift": "Evening",
       "nurse": "N009"
     },
     {
       "day": "2025-12-05",
       "shift": "Evening",
-      "nurse": "N003"
+      "nurse": "N010"
     },
     {
       "day": "2025-12-05",
@@ -105,182 +125,172 @@
     {
       "day": "2025-12-05",
       "shift": "Night",
-      "nurse": "N004"
-    },
-    {
-      "day": "2025-12-06",
-      "shift": "Morning",
-      "nurse": "N002"
-    },
-    {
-      "day": "2025-12-06",
-      "shift": "Morning",
       "nurse": "N007"
     },
     {
       "day": "2025-12-06",
-      "shift": "Morning",
+      "shift": "Evening",
+      "nurse": "N001"
+    },
+    {
+      "day": "2025-12-06",
+      "shift": "Evening",
+      "nurse": "N004"
+    },
+    {
+      "day": "2025-12-06",
+      "shift": "Evening",
       "nurse": "N010"
     },
     {
       "day": "2025-12-06",
-      "shift": "Morning",
-      "nurse": "N011"
-    },
-    {
-      "day": "2025-12-06",
-      "shift": "Evening",
-      "nurse": "N005"
-    },
-    {
-      "day": "2025-12-06",
-      "shift": "Evening",
-      "nurse": "N006"
-    },
-    {
-      "day": "2025-12-06",
-      "shift": "Evening",
-      "nurse": "N009"
+      "shift": "Night",
+      "nurse": "N007"
     },
     {
       "day": "2025-12-06",
       "shift": "Night",
+      "nurse": "N009"
+    },
+    {
+      "day": "2025-12-07",
+      "shift": "Morning",
+      "nurse": "N002"
+    },
+    {
+      "day": "2025-12-07",
+      "shift": "Morning",
+      "nurse": "N008"
+    },
+    {
+      "day": "2025-12-07",
+      "shift": "Evening",
       "nurse": "N003"
     },
     {
-      "day": "2025-12-06",
-      "shift": "Night",
-      "nurse": "N008"
-    },
-    {
       "day": "2025-12-07",
-      "shift": "Morning",
-      "nurse": "N002"
-    },
-    {
-      "day": "2025-12-07",
-      "shift": "Morning",
-      "nurse": "N005"
-    },
-    {
-      "day": "2025-12-07",
-      "shift": "Morning",
+      "shift": "Evening",
       "nurse": "N006"
     },
     {
       "day": "2025-12-07",
-      "shift": "Morning",
-      "nurse": "N009"
-    },
-    {
-      "day": "2025-12-07",
       "shift": "Evening",
-      "nurse": "N010"
-    },
-    {
-      "day": "2025-12-07",
-      "shift": "Evening",
-      "nurse": "N012"
+      "nurse": "N011"
     },
     {
       "day": "2025-12-07",
       "shift": "Night",
-      "nurse": "N001"
+      "nurse": "N004"
     },
     {
       "day": "2025-12-07",
       "shift": "Night",
-      "nurse": "N008"
+      "nurse": "N005"
     },
     {
       "day": "2025-12-08",
-      "shift": "Morning",
+      "shift": "Evening",
       "nurse": "N002"
     },
     {
       "day": "2025-12-08",
-      "shift": "Morning",
-      "nurse": "N007"
+      "shift": "Evening",
+      "nurse": "N010"
     },
     {
       "day": "2025-12-08",
-      "shift": "Morning",
+      "shift": "Evening",
       "nurse": "N011"
     },
     {
       "day": "2025-12-08",
       "shift": "Night",
-      "nurse": "N008"
+      "nurse": "N009"
     },
     {
       "day": "2025-12-09",
-      "shift": "Morning",
-      "nurse": "N001"
+      "shift": "Evening",
+      "nurse": "N003"
     },
     {
       "day": "2025-12-09",
-      "shift": "Morning",
+      "shift": "Night",
+      "nurse": "N007"
+    },
+    {
+      "day": "2025-12-09",
+      "shift": "Night",
       "nurse": "N012"
     },
     {
-      "day": "2025-12-09",
-      "shift": "Evening",
-      "nurse": "N004"
-    },
-    {
-      "day": "2025-12-09",
-      "shift": "Night",
-      "nurse": "N008"
-    },
-    {
       "day": "2025-12-03",
       "shift": "Evening",
-      "nurse": "N006"
-    },
-    {
-      "day": "2025-12-03",
-      "shift": "Night",
       "nurse": "N008"
-    },
-    {
-      "day": "2025-12-03",
-      "shift": "Night",
-      "nurse": "N009"
     },
     {
       "day": "2025-12-05",
-      "shift": "Evening",
+      "shift": "Morning",
+      "nurse": "N002"
+    },
+    {
+      "day": "2025-12-06",
+      "shift": "Morning",
+      "nurse": "N006"
+    },
+    {
+      "day": "2025-12-06",
+      "shift": "Morning",
+      "nurse": "N003"
+    },
+    {
+      "day": "2025-12-06",
+      "shift": "Morning",
       "nurse": "N005"
     },
     {
-      "day": "2025-12-07",
-      "shift": "Evening",
-      "nurse": "N007"
+      "day": "2025-12-06",
+      "shift": "Morning",
+      "nurse": "N012"
     },
     {
-      "day": "2025-12-08",
+      "day": "2025-12-07",
       "shift": "Morning",
       "nurse": "N010"
     },
     {
-      "day": "2025-12-08",
-      "shift": "Evening",
-      "nurse": "N012"
+      "day": "2025-12-07",
+      "shift": "Morning",
+      "nurse": "N001"
     },
     {
       "day": "2025-12-08",
-      "shift": "Evening",
+      "shift": "Morning",
+      "nurse": "N006"
+    },
+    {
+      "day": "2025-12-08",
+      "shift": "Morning",
+      "nurse": "N008"
+    },
+    {
+      "day": "2025-12-08",
+      "shift": "Morning",
       "nurse": "N003"
     },
     {
       "day": "2025-12-08",
-      "shift": "Evening",
-      "nurse": "N004"
+      "shift": "Morning",
+      "nurse": "N012"
     },
     {
       "day": "2025-12-08",
       "shift": "Night",
-      "nurse": "N005"
+      "nurse": "N004"
+    },
+    {
+      "day": "2025-12-09",
+      "shift": "Morning",
+      "nurse": "N011"
     },
     {
       "day": "2025-12-09",
@@ -290,60 +300,60 @@
     {
       "day": "2025-12-09",
       "shift": "Morning",
-      "nurse": "N011"
-    },
-    {
-      "day": "2025-12-09",
-      "shift": "Evening",
-      "nurse": "N006"
-    },
-    {
-      "day": "2025-12-09",
-      "shift": "Evening",
-      "nurse": "N007"
-    },
-    {
-      "day": "2025-12-09",
-      "shift": "Night",
       "nurse": "N010"
+    },
+    {
+      "day": "2025-12-09",
+      "shift": "Morning",
+      "nurse": "N005"
+    },
+    {
+      "day": "2025-12-09",
+      "shift": "Evening",
+      "nurse": "N001"
+    },
+    {
+      "day": "2025-12-09",
+      "shift": "Evening",
+      "nurse": "N009"
     }
   ],
   "understaffed": [],
   "nurse_stats": [
     {
       "nurse": "N001",
-      "assigned_shifts": 4,
-      "overtime": 0,
-      "nights": 2,
-      "satisfaction": 90
-    },
-    {
-      "nurse": "N002",
-      "assigned_shifts": 5,
-      "overtime": 1,
-      "nights": 0,
-      "satisfaction": 90
-    },
-    {
-      "nurse": "N003",
-      "assigned_shifts": 5,
-      "overtime": 1,
-      "nights": 1,
-      "satisfaction": 86
-    },
-    {
-      "nurse": "N004",
-      "assigned_shifts": 5,
-      "overtime": 1,
-      "nights": 1,
-      "satisfaction": 86
-    },
-    {
-      "nurse": "N005",
       "assigned_shifts": 5,
       "overtime": 2,
       "nights": 1,
       "satisfaction": 76
+    },
+    {
+      "nurse": "N002",
+      "assigned_shifts": 6,
+      "overtime": 2,
+      "nights": 0,
+      "satisfaction": 80
+    },
+    {
+      "nurse": "N003",
+      "assigned_shifts": 6,
+      "overtime": 2,
+      "nights": 0,
+      "satisfaction": 80
+    },
+    {
+      "nurse": "N004",
+      "assigned_shifts": 4,
+      "overtime": 1,
+      "nights": 3,
+      "satisfaction": 75
+    },
+    {
+      "nurse": "N005",
+      "assigned_shifts": 6,
+      "overtime": 2,
+      "nights": 1,
+      "satisfaction": 77
     },
     {
       "nurse": "N006",
@@ -354,55 +364,55 @@
     },
     {
       "nurse": "N007",
+      "assigned_shifts": 4,
+      "overtime": 0,
+      "nights": 3,
+      "satisfaction": 85
+    },
+    {
+      "nurse": "N008",
+      "assigned_shifts": 5,
+      "overtime": 2,
+      "nights": 0,
+      "satisfaction": 80
+    },
+    {
+      "nurse": "N009",
+      "assigned_shifts": 5,
+      "overtime": 1,
+      "nights": 3,
+      "satisfaction": 78
+    },
+    {
+      "nurse": "N010",
       "assigned_shifts": 6,
       "overtime": 2,
       "nights": 0,
       "satisfaction": 80
     },
     {
-      "nurse": "N008",
-      "assigned_shifts": 6,
+      "nurse": "N011",
+      "assigned_shifts": 5,
       "overtime": 1,
-      "nights": 5,
-      "satisfaction": 69
+      "nights": 2,
+      "satisfaction": 82
     },
     {
-      "nurse": "N009",
-      "assigned_shifts": 4,
-      "overtime": 1,
-      "nights": 1,
-      "satisfaction": 85
-    },
-    {
-      "nurse": "N010",
+      "nurse": "N012",
       "assigned_shifts": 6,
       "overtime": 2,
       "nights": 1,
       "satisfaction": 77
-    },
-    {
-      "nurse": "N011",
-      "assigned_shifts": 5,
-      "overtime": 1,
-      "nights": 0,
-      "satisfaction": 90
-    },
-    {
-      "nurse": "N012",
-      "assigned_shifts": 5,
-      "overtime": 1,
-      "nights": 0,
-      "satisfaction": 82
     }
   ],
   "details": {
-    "average_satisfaction": 82.58,
+    "average_satisfaction": 79.17,
     "post_fill": {
       "note": "All gaps were filled with real-nurse overtime (never Night→Morning)."
     },
-    "best_bound": 1630.0,
-    "wall_time_sec": 0.019635278000000003,
+    "best_bound": 1430.0,
+    "wall_time_sec": 0.080753619,
     "conflicts": 0,
-    "branches": 506
+    "branches": 0
   }
 }
